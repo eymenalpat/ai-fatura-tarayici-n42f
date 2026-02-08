@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     )
 
     # Application
+    PROJECT_NAME: str = Field(default="AI Invoice Scanner")
+    VERSION: str = Field(default="1.0.0")
     APP_NAME: str = Field(default="AI Fatura Tarayıcı")
     APP_VERSION: str = Field(default="1.0.0")
     DEBUG: bool = Field(default=False)
@@ -25,6 +27,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[str] = Field(
         default=["http://localhost:3000", "http://localhost:8000"]
     )
+    FRONTEND_URL: str = Field(default="http://localhost:3000")
 
     # Database
     DATABASE_URL: str = Field(
@@ -41,6 +44,7 @@ class Settings(BaseSettings):
     REDIS_DB: int = Field(default=0)
     REDIS_MAX_CONNECTIONS: int = Field(default=50)
     REDIS_DECODE_RESPONSES: bool = Field(default=True)
+    REDIS_ENABLED: bool = Field(default=True)
 
     # Celery
     CELERY_BROKER_URL: str = Field(default="redis://localhost:6379/1")
@@ -55,14 +59,19 @@ class Settings(BaseSettings):
     CELERY_TASK_SOFT_TIME_LIMIT: int = Field(default=25 * 60)
 
     # JWT Authentication
+    SECRET_KEY: str = Field(
+        default="supersecretkey_change_in_production_minimum_32_characters_long"
+    )
     JWT_SECRET_KEY: str = Field(
         default="supersecretkey_change_in_production_minimum_32_characters_long"
     )
+    ALGORITHM: str = Field(default="HS256")
     JWT_ALGORITHM: str = Field(default="HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30)
     REFRESH_TOKEN_EXPIRE_DAYS: int = Field(default=7)
 
     # Google Cloud Vision OCR
+    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = Field(default=None)
     GOOGLE_VISION_CREDENTIALS_PATH: Optional[str] = Field(default=None)
     GOOGLE_CLOUD_PROJECT_ID: Optional[str] = Field(default=None)
     GOOGLE_VISION_API_KEY: Optional[str] = Field(default=None)
@@ -98,6 +107,7 @@ class Settings(BaseSettings):
     PARASUT_COMPANY_ID: Optional[str] = Field(default=None)
     PARASUT_REDIRECT_URI: str = Field(default="http://localhost:8000/api/v1/parasut/callback")
     PARASUT_API_BASE_URL: str = Field(default="https://api.parasut.com/v4")
+    PARASUT_API_URL: str = Field(default="https://api.parasut.com/v4")
 
     # File Upload
     MAX_UPLOAD_SIZE: int = Field(default=10 * 1024 * 1024)
@@ -157,7 +167,7 @@ class Settings(BaseSettings):
             return [content.strip() for content in v.split(',') if content.strip()]
         return v
 
-    @field_validator('JWT_SECRET_KEY')
+    @field_validator('JWT_SECRET_KEY', 'SECRET_KEY')
     @classmethod
     def validate_jwt_secret(cls, v):
         if len(v) < 32:

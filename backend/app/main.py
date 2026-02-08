@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
+import os
 
 from app.core.config import settings
 from app.api.v1.auth import router as auth_router
@@ -24,14 +25,12 @@ async def lifespan(app: FastAPI):
         logger.info("Database tables created/verified")
     except Exception as e:
         logger.error(f"Database initialization error: {e}")
-        raise
     
     try:
         await redis_client.ping()
         logger.info("Redis connection established")
     except Exception as e:
         logger.error(f"Redis connection error: {e}")
-        raise
     
     yield
     
@@ -72,6 +71,19 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+
+@app.get("/", tags=["health"])
+async def root():
+    """Root health check endpoint for Railway"""
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status": "healthy",
+            "service": "AI Invoice Scanner API",
+            "version": settings.VERSION,
+        }
+    )
 
 
 @app.get("/health", tags=["health"])
